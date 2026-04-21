@@ -17,5 +17,8 @@ pyyaml>=6.0.2
 click>=8.1
 rich>=13.0
 
+# Web UI
+streamlit>=1.35.0
+
 # ── Dev / test (optional) ─────────────────────────────────────────────────────
 # pip install -r requirements.txt -r requirements-dev.txt
