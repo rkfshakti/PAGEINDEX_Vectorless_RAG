@@ -72,3 +72,5 @@ data/*
 !data/sample_report.md
 results/*
 !results/.gitkeep
+demo/*.gif
+demo/preview_*.png
