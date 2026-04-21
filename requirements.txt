@@ -1,0 +1,21 @@
+# Core runtime dependencies
+# Install via: pip install -r requirements.txt
+
+# LiteLLM — unified interface to 100+ LLM providers
+# Supports: OpenAI, Anthropic, Gemini, Azure, Ollama, LM Studio, vLLM, ...
+litellm>=1.83.0
+
+# PDF parsing
+pymupdf>=1.24.0
+PyPDF2>=3.0.1
+
+# Configuration
+python-dotenv>=1.1.0
+pyyaml>=6.0.2
+
+# CLI
+click>=8.1
+rich>=13.0
+
+# ── Dev / test (optional) ─────────────────────────────────────────────────────
+# pip install -r requirements.txt -r requirements-dev.txt
