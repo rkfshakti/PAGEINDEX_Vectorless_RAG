@@ -24,7 +24,6 @@ from pageindex_demo.pipeline import RAGPipeline
 
 logging.basicConfig(level=logging.WARNING)
 
-# ── Page config ───────────────────────────────────────────────────────────────
 st.set_page_config(
     page_title="PageIndex · Vectorless RAG",
     page_icon="📑",
@@ -32,1217 +31,1004 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# ── Master CSS ────────────────────────────────────────────────────────────────
+# ══════════════════════════════════════════════════════════════════
+# CSS  — light, airy, professional
+# ══════════════════════════════════════════════════════════════════
 st.markdown("""
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 
 <style>
-/* ═══════════════════════════════════════════════════════
-   GLOBAL RESET & BASE
-═══════════════════════════════════════════════════════ */
-*, *::before, *::after { box-sizing: border-box; }
-
+/* ── base ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html, body, [class*="css"] {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+    font-family: 'Inter', -apple-system, sans-serif !important;
+    background-color: #f5f4fb !important;
+    color: #1e1b4b !important;
 }
+#MainMenu, footer, header, .stDeployButton { visibility: hidden; }
+.block-container { padding-top: 1.4rem !important; padding-bottom: 3rem !important; max-width: 1200px !important; }
 
-/* Kill Streamlit chrome */
-#MainMenu, footer, header { visibility: hidden; }
-.block-container { padding-top: 1.5rem !important; padding-bottom: 2rem !important; }
-.stDeployButton { display: none; }
+/* ── scrollbar ── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: #ece9f8; }
+::-webkit-scrollbar-thumb { background: #c4b8f5; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #9f8de8; }
 
-/* ═══════════════════════════════════════════════════════
-   SCROLLBAR
-═══════════════════════════════════════════════════════ */
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: #0d0d1a; }
-::-webkit-scrollbar-thumb { background: #2d2d5e; border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #4a4aff; }
-
-/* ═══════════════════════════════════════════════════════
+/* ════════════════════════
    SIDEBAR
-═══════════════════════════════════════════════════════ */
+════════════════════════ */
 [data-testid="stSidebar"] {
-    background: linear-gradient(180deg, #080818 0%, #0d0d25 100%) !important;
-    border-right: 1px solid rgba(74, 74, 255, 0.15) !important;
+    background: #ffffff !important;
+    border-right: 1px solid #e8e4f7 !important;
+    box-shadow: 2px 0 12px rgba(99,102,241,0.06) !important;
 }
+[data-testid="stSidebar"] > div:first-child { padding-top: 1.4rem; }
 
-[data-testid="stSidebar"] > div:first-child {
-    padding-top: 1.5rem;
+.sb-logo {
+    display: flex; align-items: center; gap: 10px;
+    padding: 0 0 1.2rem 0; border-bottom: 1px solid #ede9fc; margin-bottom: 0.4rem;
 }
-
-.sidebar-logo {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 0 0 1rem 0;
-}
-.sidebar-logo-icon {
-    width: 40px; height: 40px;
-    background: linear-gradient(135deg, #4a4aff, #8b5cf6);
-    border-radius: 10px;
+.sb-logo-icon {
+    width: 42px; height: 42px; border-radius: 12px;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
     display: flex; align-items: center; justify-content: center;
     font-size: 1.3rem;
-    box-shadow: 0 0 20px rgba(74,74,255,0.4);
+    box-shadow: 0 4px 14px rgba(99,102,241,0.35);
 }
-.sidebar-logo-text { line-height: 1.2; }
-.sidebar-logo-title {
-    font-size: 1.05rem; font-weight: 700;
-    background: linear-gradient(90deg, #ffffff, #a5b4fc);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+.sb-logo-name {
+    font-size: 1.05rem; font-weight: 800; color: #1e1b4b; letter-spacing: -0.01em;
 }
-.sidebar-logo-sub { font-size: 0.68rem; color: #6b6ba0; letter-spacing: 0.06em; text-transform: uppercase; }
-
-.sidebar-section-label {
-    font-size: 0.65rem;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: #4a4aff;
-    margin: 1.2rem 0 0.5rem 0;
+.sb-logo-tag {
+    font-size: 0.65rem; color: #7c74c9; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.08em;
+}
+.sb-section {
+    font-size: 0.63rem; font-weight: 700; letter-spacing: 0.12em;
+    text-transform: uppercase; color: #6366f1;
+    margin: 1.1rem 0 0.45rem 0;
     display: flex; align-items: center; gap: 6px;
 }
-.sidebar-section-label::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: linear-gradient(90deg, rgba(74,74,255,0.4), transparent);
+.sb-section::after {
+    content: ''; flex: 1; height: 1px;
+    background: linear-gradient(90deg, #e0dcfa, transparent);
 }
 
-/* Sidebar inputs */
+/* sidebar inputs */
 [data-testid="stSidebar"] .stTextInput input {
-    background: rgba(255,255,255,0.04) !important;
-    border: 1px solid rgba(74,74,255,0.25) !important;
-    border-radius: 8px !important;
-    color: #e0e0ff !important;
+    background: #faf9ff !important;
+    border: 1.5px solid #ddd8f8 !important;
+    border-radius: 9px !important;
+    color: #1e1b4b !important;
     font-family: 'JetBrains Mono', monospace !important;
-    font-size: 0.82rem !important;
+    font-size: 0.81rem !important;
     transition: border-color 0.2s, box-shadow 0.2s;
 }
 [data-testid="stSidebar"] .stTextInput input:focus {
-    border-color: #4a4aff !important;
-    box-shadow: 0 0 0 3px rgba(74,74,255,0.15) !important;
+    border-color: #6366f1 !important;
+    box-shadow: 0 0 0 3px rgba(99,102,241,0.12) !important;
+    background: #fff !important;
 }
 [data-testid="stSidebar"] label {
-    color: #8080b0 !important;
+    color: #6b6ba8 !important; font-size: 0.77rem !important; font-weight: 500 !important;
+}
+
+/* sidebar preset buttons */
+[data-testid="stSidebar"] .stButton > button {
+    background: #f0eeff !important;
+    color: #5b5bd6 !important;
+    border: 1.5px solid #d4cefd !important;
+    border-radius: 8px !important;
     font-size: 0.78rem !important;
-    font-weight: 500 !important;
+    font-weight: 600 !important;
+    padding: 0.4rem 0.6rem !important;
+    transition: all 0.18s !important;
+    box-shadow: none !important;
+}
+[data-testid="stSidebar"] .stButton > button:hover {
+    background: #e3deff !important;
+    border-color: #6366f1 !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 3px 10px rgba(99,102,241,0.18) !important;
 }
 
-/* Slider */
-[data-testid="stSidebar"] .stSlider [data-testid="stSliderThumb"] {
-    background: #4a4aff !important;
-}
-[data-testid="stSidebar"] .stSlider [data-testid="stSliderTrack"] > div:first-child {
-    background: rgba(255,255,255,0.08) !important;
-}
-
-/* Upload area */
+/* upload zone */
 [data-testid="stFileUploadDropzone"] {
-    background: rgba(74,74,255,0.04) !important;
-    border: 1.5px dashed rgba(74,74,255,0.35) !important;
-    border-radius: 10px !important;
+    background: #faf9ff !important;
+    border: 2px dashed #c8c2f5 !important;
+    border-radius: 12px !important;
     transition: all 0.2s;
 }
 [data-testid="stFileUploadDropzone"]:hover {
-    background: rgba(74,74,255,0.08) !important;
-    border-color: rgba(74,74,255,0.6) !important;
+    background: #f0eeff !important;
+    border-color: #6366f1 !important;
 }
 
-/* Sidebar buttons */
-[data-testid="stSidebar"] .stButton > button {
-    background: linear-gradient(135deg, #4a4aff, #7c3aed) !important;
-    color: white !important;
-    border: none !important;
-    border-radius: 9px !important;
-    font-weight: 600 !important;
+/* primary sidebar CTA */
+.stButton [data-testid="baseButton-primary"] > button,
+[data-testid="stSidebar"] button[kind="primary"] {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6) !important;
+    color: white !important; border: none !important;
+    border-radius: 10px !important; font-weight: 700 !important;
     font-size: 0.88rem !important;
-    letter-spacing: 0.02em;
-    padding: 0.55rem 1rem !important;
+    box-shadow: 0 4px 14px rgba(99,102,241,0.35) !important;
     transition: all 0.2s !important;
-    box-shadow: 0 4px 15px rgba(74,74,255,0.3) !important;
 }
-[data-testid="stSidebar"] .stButton > button:hover {
+[data-testid="stSidebar"] button[kind="primary"]:hover {
+    box-shadow: 0 6px 20px rgba(99,102,241,0.5) !important;
     transform: translateY(-1px) !important;
-    box-shadow: 0 6px 20px rgba(74,74,255,0.5) !important;
 }
 
-/* Expander */
+/* expander */
 [data-testid="stSidebar"] [data-testid="stExpander"] {
-    background: rgba(255,255,255,0.03) !important;
-    border: 1px solid rgba(74,74,255,0.15) !important;
+    background: #faf9ff !important;
+    border: 1.5px solid #e8e3fc !important;
     border-radius: 10px !important;
 }
+[data-testid="stSidebar"] [data-testid="stExpander"] summary {
+    color: #5b5bd6 !important; font-size: 0.82rem !important; font-weight: 600 !important;
+}
 
-/* ═══════════════════════════════════════════════════════
-   HERO HEADER
-═══════════════════════════════════════════════════════ */
-.hero {
-    background: linear-gradient(135deg, #080818 0%, #0f0f2e 50%, #0d0828 100%);
-    border: 1px solid rgba(74,74,255,0.2);
-    border-radius: 20px;
-    padding: 2.5rem 2.8rem;
-    margin-bottom: 1.5rem;
-    position: relative;
-    overflow: hidden;
+/* slider accent */
+[data-testid="stSidebar"] .stSlider [data-testid="stSliderThumb"] {
+    background: #6366f1 !important;
 }
-.hero::before {
-    content: '';
-    position: absolute;
-    top: -60px; right: -60px;
-    width: 250px; height: 250px;
-    background: radial-gradient(circle, rgba(74,74,255,0.15) 0%, transparent 70%);
-    pointer-events: none;
-}
-.hero::after {
-    content: '';
-    position: absolute;
-    bottom: -80px; left: -40px;
-    width: 300px; height: 300px;
-    background: radial-gradient(circle, rgba(139,92,246,0.08) 0%, transparent 70%);
-    pointer-events: none;
-}
-.hero-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background: rgba(74,74,255,0.12);
-    border: 1px solid rgba(74,74,255,0.3);
-    color: #a5b4fc;
-    font-size: 0.72rem;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    padding: 4px 12px;
-    border-radius: 20px;
-    margin-bottom: 1rem;
-}
-.hero-badge-dot {
-    width: 6px; height: 6px;
-    background: #4a4aff;
-    border-radius: 50%;
-    animation: pulse 2s infinite;
-}
-@keyframes pulse {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.5; transform: scale(0.8); }
-}
-.hero-title {
-    font-size: 2.4rem;
-    font-weight: 800;
-    line-height: 1.15;
-    margin: 0 0 0.6rem 0;
-    background: linear-gradient(135deg, #ffffff 30%, #a5b4fc 70%, #8b5cf6 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-}
-.hero-subtitle {
-    font-size: 1rem;
-    color: #7070a0;
-    max-width: 580px;
-    line-height: 1.6;
-}
-.hero-pills {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 1.4rem;
-}
-.hero-pill {
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.1);
-    color: #9090c0;
-    font-size: 0.76rem;
-    padding: 4px 12px;
-    border-radius: 20px;
-    display: inline-flex; align-items: center; gap: 5px;
-}
-.hero-pill-accent { color: #a5b4fc; }
 
-/* ═══════════════════════════════════════════════════════
+/* ════════════════════════
    TABS
-═══════════════════════════════════════════════════════ */
+════════════════════════ */
 .stTabs [data-baseweb="tab-list"] {
-    background: rgba(255,255,255,0.03) !important;
+    background: #ffffff !important;
     border-radius: 12px !important;
-    padding: 4px !important;
-    gap: 2px !important;
-    border: 1px solid rgba(255,255,255,0.06) !important;
+    padding: 5px !important;
+    gap: 3px !important;
+    border: 1.5px solid #e8e3fc !important;
+    box-shadow: 0 2px 8px rgba(99,102,241,0.06) !important;
 }
 .stTabs [data-baseweb="tab"] {
     border-radius: 9px !important;
     font-size: 0.85rem !important;
     font-weight: 500 !important;
-    color: #6060a0 !important;
-    padding: 8px 20px !important;
+    color: #9090c4 !important;
+    padding: 9px 22px !important;
     transition: all 0.2s !important;
 }
 .stTabs [aria-selected="true"] {
-    background: linear-gradient(135deg, rgba(74,74,255,0.25), rgba(139,92,246,0.2)) !important;
-    color: #e0e0ff !important;
-    box-shadow: 0 2px 8px rgba(74,74,255,0.2) !important;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6) !important;
+    color: #ffffff !important;
+    box-shadow: 0 3px 10px rgba(99,102,241,0.3) !important;
 }
 .stTabs [data-baseweb="tab-highlight"] { display: none !important; }
+.stTabs [data-baseweb="tab-panel"] { padding-top: 1.4rem !important; }
 
-/* ═══════════════════════════════════════════════════════
-   STAT CARDS
-═══════════════════════════════════════════════════════ */
-.stat-grid { display: flex; gap: 14px; margin-bottom: 1.5rem; }
-.stat-card {
-    flex: 1;
-    background: linear-gradient(135deg, rgba(14,14,35,0.9), rgba(20,20,50,0.9));
-    border: 1px solid rgba(74,74,255,0.18);
-    border-radius: 14px;
-    padding: 16px 20px;
-    display: flex; align-items: center; gap: 14px;
-    transition: border-color 0.2s, transform 0.2s;
+/* ════════════════════════
+   HERO
+════════════════════════ */
+.hero {
+    background: linear-gradient(135deg, #ffffff 0%, #faf8ff 50%, #f3f0ff 100%);
+    border: 1.5px solid #e4defc;
+    border-radius: 22px;
+    padding: 2.6rem 3rem;
+    margin-bottom: 1.6rem;
     position: relative;
     overflow: hidden;
+    box-shadow: 0 4px 24px rgba(99,102,241,0.08), 0 1px 4px rgba(99,102,241,0.06);
 }
-.stat-card::before {
+.hero::before {
     content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, #4a4aff, #8b5cf6);
-    opacity: 0.7;
+    position: absolute; top: -80px; right: -80px;
+    width: 320px; height: 320px;
+    background: radial-gradient(circle, rgba(139,92,246,0.12) 0%, transparent 65%);
+    pointer-events: none;
 }
-.stat-card:hover { border-color: rgba(74,74,255,0.4); transform: translateY(-1px); }
+.hero::after {
+    content: '';
+    position: absolute; bottom: -100px; left: 60px;
+    width: 280px; height: 280px;
+    background: radial-gradient(circle, rgba(99,102,241,0.07) 0%, transparent 65%);
+    pointer-events: none;
+}
+.hero-badge {
+    display: inline-flex; align-items: center; gap: 7px;
+    background: rgba(99,102,241,0.08);
+    border: 1.5px solid rgba(99,102,241,0.22);
+    color: #5b5bd6;
+    font-size: 0.7rem; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 5px 14px; border-radius: 20px; margin-bottom: 1.1rem;
+}
+.hero-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: #6366f1;
+    animation: hpulse 2s infinite;
+}
+@keyframes hpulse {
+    0%,100% { transform: scale(1); opacity: 1; }
+    50%      { transform: scale(0.7); opacity: 0.5; }
+}
+.hero-title {
+    font-size: 2.6rem; font-weight: 800; line-height: 1.15;
+    letter-spacing: -0.03em;
+    background: linear-gradient(135deg, #1e1b4b 20%, #4f46e5 60%, #7c3aed 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    margin-bottom: 0.75rem;
+}
+.hero-sub {
+    font-size: 1rem; color: #6b6ba8; max-width: 560px;
+    line-height: 1.7; font-weight: 400; margin-bottom: 1.5rem;
+}
+.hero-pills { display: flex; flex-wrap: wrap; gap: 8px; }
+.hero-pill {
+    background: #ffffff;
+    border: 1.5px solid #e4defc;
+    color: #6b6ba8;
+    font-size: 0.76rem; font-weight: 500;
+    padding: 5px 13px; border-radius: 20px;
+    display: inline-flex; align-items: center; gap: 5px;
+    box-shadow: 0 1px 4px rgba(99,102,241,0.06);
+    transition: all 0.18s;
+}
+.hero-pill:hover { border-color: #9f8de8; color: #5b5bd6; transform: translateY(-1px); }
+.hero-pill-hi { color: #5b5bd6 !important; border-color: #c4b8f5 !important; background: #f3f0ff !important; }
+
+/* ════════════════════════
+   STAT CARDS
+════════════════════════ */
+.stat-row { display: flex; gap: 14px; margin-bottom: 1.6rem; }
+.stat-card {
+    flex: 1;
+    background: #ffffff;
+    border: 1.5px solid #ede9fc;
+    border-radius: 16px;
+    padding: 18px 20px;
+    display: flex; align-items: center; gap: 14px;
+    box-shadow: 0 2px 12px rgba(99,102,241,0.07);
+    transition: transform 0.18s, box-shadow 0.18s, border-color 0.18s;
+    position: relative; overflow: hidden;
+}
+.stat-card::after {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, #6366f1, #8b5cf6);
+    border-radius: 16px 16px 0 0;
+}
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(99,102,241,0.14);
+    border-color: #c4b8f5;
+}
 .stat-icon {
-    width: 44px; height: 44px;
-    border-radius: 10px;
+    width: 46px; height: 46px; border-radius: 12px;
     display: flex; align-items: center; justify-content: center;
-    font-size: 1.3rem;
-    flex-shrink: 0;
+    font-size: 1.35rem; flex-shrink: 0;
 }
-.stat-icon-blue  { background: rgba(74,74,255,0.15); }
-.stat-icon-purple{ background: rgba(139,92,246,0.15); }
-.stat-icon-green { background: rgba(34,197,94,0.15); }
-.stat-icon-amber { background: rgba(245,158,11,0.15); }
-.stat-body { min-width: 0; }
-.stat-value {
-    font-size: 1.65rem;
-    font-weight: 700;
-    background: linear-gradient(135deg, #ffffff, #a5b4fc);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    line-height: 1;
+.si-indigo { background: linear-gradient(135deg, #eef2ff, #e0e7ff); }
+.si-violet { background: linear-gradient(135deg, #f5f3ff, #ede9fe); }
+.si-amber  { background: linear-gradient(135deg, #fffbeb, #fef3c7); }
+.si-green  { background: linear-gradient(135deg, #f0fdf4, #dcfce7); }
+.stat-val {
+    font-size: 1.75rem; font-weight: 800; line-height: 1;
+    background: linear-gradient(135deg, #1e1b4b, #4f46e5);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
 }
-.stat-label {
-    font-size: 0.72rem;
-    color: #5050a0;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    font-weight: 600;
-    margin-top: 3px;
+.stat-lbl {
+    font-size: 0.7rem; color: #9090c4; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.08em; margin-top: 3px;
 }
 
-/* ═══════════════════════════════════════════════════════
+/* ════════════════════════
+   LANDING
+════════════════════════ */
+.landing {
+    text-align: center;
+    background: linear-gradient(135deg, #ffffff, #faf8ff);
+    border: 2px dashed #d4cefd;
+    border-radius: 22px;
+    padding: 4rem 2rem;
+    box-shadow: 0 2px 16px rgba(99,102,241,0.05);
+}
+.landing-icon { font-size: 3.5rem; margin-bottom: 0.8rem; }
+.landing-h { font-size: 1.25rem; font-weight: 700; color: #1e1b4b; margin-bottom: 0.4rem; }
+.landing-p { font-size: 0.88rem; color: #9090c4; }
+.step-row {
+    display: flex; justify-content: center; gap: 2.5rem;
+    margin-top: 2.4rem; flex-wrap: wrap;
+}
+.step-col { display: flex; flex-direction: column; align-items: center; gap: 8px; max-width: 130px; }
+.step-num {
+    width: 34px; height: 34px; border-radius: 50%;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: white; font-size: 0.85rem; font-weight: 800;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 12px rgba(99,102,241,0.35);
+}
+.step-emoji { font-size: 1.6rem; }
+.step-txt { font-size: 0.78rem; color: #6b6ba8; text-align: center; line-height: 1.4; }
+
+/* ════════════════════════
    CHAT
-═══════════════════════════════════════════════════════ */
-.chat-wrapper {
-    background: rgba(8,8,24,0.6);
-    border: 1px solid rgba(74,74,255,0.12);
-    border-radius: 16px;
-    padding: 1.5rem;
-    min-height: 300px;
+════════════════════════ */
+.chat-box {
+    background: #ffffff;
+    border: 1.5px solid #ede9fc;
+    border-radius: 18px;
+    padding: 1.6rem;
+    min-height: 320px;
+    box-shadow: 0 2px 16px rgba(99,102,241,0.07);
     margin-bottom: 1rem;
-    backdrop-filter: blur(10px);
 }
 .chat-empty {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 3rem 1rem;
-    text-align: center;
-    color: #404068;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 3rem 1rem; color: #c4bef0; text-align: center;
 }
-.chat-empty-icon {
-    font-size: 3rem;
-    margin-bottom: 0.8rem;
-    opacity: 0.5;
-}
-.chat-empty-title { font-size: 1rem; font-weight: 600; color: #5050a0; margin-bottom: 0.3rem; }
-.chat-empty-sub { font-size: 0.82rem; color: #383860; }
+.chat-empty-ico { font-size: 2.6rem; margin-bottom: 0.6rem; opacity: 0.5; }
+.chat-empty-h { font-size: 0.95rem; font-weight: 600; color: #b0aad8; }
+.chat-empty-s { font-size: 0.8rem; color: #cdc7ec; margin-top: 3px; }
 
-.msg-row {
-    display: flex;
-    align-items: flex-end;
-    gap: 10px;
-    margin-bottom: 1.2rem;
-    animation: fadeSlideIn 0.3s ease;
-}
-@keyframes fadeSlideIn {
-    from { opacity: 0; transform: translateY(8px); }
-    to   { opacity: 1; transform: translateY(0); }
-}
-.msg-row-user  { flex-direction: row-reverse; }
-.msg-avatar {
-    width: 34px; height: 34px;
-    border-radius: 50%;
+.msg-row { display: flex; align-items: flex-end; gap: 10px; margin-bottom: 1.2rem;
+           animation: fadein 0.28s ease; }
+@keyframes fadein { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+.msg-row-user { flex-direction: row-reverse; }
+.avatar {
+    width: 36px; height: 36px; border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
-    font-size: 1rem;
-    flex-shrink: 0;
+    font-size: 1.05rem; flex-shrink: 0;
 }
-.msg-avatar-user { background: linear-gradient(135deg, #1e3a8a, #3b82f6); }
-.msg-avatar-ai   { background: linear-gradient(135deg, #4a4aff, #8b5cf6); box-shadow: 0 0 12px rgba(74,74,255,0.35); }
+.av-user { background: linear-gradient(135deg, #3b82f6, #6366f1); box-shadow: 0 3px 10px rgba(99,102,241,0.25); }
+.av-ai   { background: linear-gradient(135deg, #6366f1, #8b5cf6); box-shadow: 0 3px 10px rgba(139,92,246,0.3); }
 .msg-body { max-width: 76%; }
-.msg-bubble {
-    padding: 12px 16px;
-    border-radius: 16px;
-    font-size: 0.91rem;
-    line-height: 1.65;
-    word-break: break-word;
+.bubble {
+    padding: 13px 17px; border-radius: 18px;
+    font-size: 0.91rem; line-height: 1.65; word-break: break-word;
 }
-.msg-bubble-user {
-    background: linear-gradient(135deg, #1e3a8a, #1d4ed8);
-    color: #e8f0fe;
-    border-radius: 16px 16px 4px 16px;
-    box-shadow: 0 4px 15px rgba(29,78,216,0.25);
+.bubble-user {
+    background: linear-gradient(135deg, #4f46e5, #6366f1);
+    color: #ffffff;
+    border-radius: 18px 18px 4px 18px;
+    box-shadow: 0 4px 16px rgba(99,102,241,0.28);
 }
-.msg-bubble-ai {
-    background: linear-gradient(135deg, rgba(14,14,40,0.95), rgba(20,20,55,0.95));
-    color: #d0d0f0;
-    border-radius: 16px 16px 16px 4px;
-    border: 1px solid rgba(74,74,255,0.2);
-    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+.bubble-ai {
+    background: #faf8ff;
+    color: #1e1b4b;
+    border: 1.5px solid #ede9fc;
+    border-radius: 18px 18px 18px 4px;
+    box-shadow: 0 3px 12px rgba(99,102,241,0.08);
 }
-.msg-meta {
-    font-size: 0.68rem;
-    color: #3a3a6a;
-    margin-top: 4px;
-    padding: 0 4px;
+.src-row {
+    display: flex; flex-wrap: wrap; gap: 6px;
+    margin-top: 10px; padding-top: 10px;
+    border-top: 1px solid #ede9fc;
 }
-.msg-row-user .msg-meta { text-align: right; }
-.sources-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin-top: 10px;
-    padding-top: 10px;
-    border-top: 1px solid rgba(74,74,255,0.12);
-}
-.source-chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    background: rgba(74,74,255,0.1);
-    border: 1px solid rgba(74,74,255,0.25);
-    color: #8888d0;
-    font-size: 0.71rem;
-    font-weight: 500;
-    padding: 3px 10px;
-    border-radius: 20px;
+.src-chip {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: #f0eeff; border: 1.5px solid #d4cefd;
+    color: #5b5bd6; font-size: 0.7rem; font-weight: 600;
+    padding: 3px 10px; border-radius: 20px;
     transition: all 0.15s;
 }
-.source-chip:hover { background: rgba(74,74,255,0.2); color: #b0b0ff; }
+.src-chip:hover { background: #e3deff; border-color: #9f8de8; }
 
-/* Chat input area */
-.chat-input-area {
-    background: rgba(10,10,28,0.8);
-    border: 1px solid rgba(74,74,255,0.2);
+/* chat input wrapper */
+.input-wrap {
+    background: #ffffff;
+    border: 1.5px solid #e4defc;
     border-radius: 14px;
-    padding: 1rem;
-    backdrop-filter: blur(10px);
+    padding: 1rem 1.1rem;
+    box-shadow: 0 2px 12px rgba(99,102,241,0.07);
+    margin-bottom: 0.6rem;
 }
-
-/* Streamlit form/input inside chat area */
-.stForm { border: none !important; padding: 0 !important; }
 .stTextInput > div > div > input {
-    background: rgba(255,255,255,0.04) !important;
-    border: 1px solid rgba(74,74,255,0.3) !important;
+    background: #faf8ff !important;
+    border: 1.5px solid #ddd8f8 !important;
     border-radius: 10px !important;
-    color: #e0e0ff !important;
+    color: #1e1b4b !important;
     font-size: 0.92rem !important;
     padding: 0.65rem 1rem !important;
     transition: all 0.2s !important;
 }
 .stTextInput > div > div > input:focus {
-    border-color: #4a4aff !important;
-    box-shadow: 0 0 0 3px rgba(74,74,255,0.15) !important;
+    border-color: #6366f1 !important;
+    box-shadow: 0 0 0 3px rgba(99,102,241,0.12) !important;
+    background: #fff !important;
 }
-.stTextInput > div > div > input::placeholder { color: #404070 !important; }
-
-/* Send button */
-.stFormSubmitButton > button, .stButton > button {
-    background: linear-gradient(135deg, #4a4aff, #7c3aed) !important;
-    color: white !important;
-    border: none !important;
-    border-radius: 10px !important;
-    font-weight: 600 !important;
+.stTextInput > div > div > input::placeholder { color: #b0aad8 !important; }
+.stFormSubmitButton > button {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6) !important;
+    color: white !important; border: none !important;
+    border-radius: 10px !important; font-weight: 700 !important;
     font-size: 0.88rem !important;
+    box-shadow: 0 4px 14px rgba(99,102,241,0.35) !important;
     transition: all 0.2s !important;
-    box-shadow: 0 4px 15px rgba(74,74,255,0.3) !important;
+    padding: 0.65rem 1.4rem !important;
 }
-.stFormSubmitButton > button:hover, .stButton > button:hover {
+.stFormSubmitButton > button:hover {
     transform: translateY(-1px) !important;
-    box-shadow: 0 6px 20px rgba(74,74,255,0.5) !important;
+    box-shadow: 0 6px 20px rgba(99,102,241,0.5) !important;
 }
-
-/* Clear chat button — secondary style */
-button[kind="secondary"] {
-    background: rgba(255,255,255,0.05) !important;
-    border: 1px solid rgba(255,255,255,0.1) !important;
-    color: #6060a0 !important;
+/* clear chat */
+.stButton > button[kind="secondary"], .stButton > button {
+    background: #f8f6ff !important;
+    border: 1.5px solid #e0d9fc !important;
+    color: #8080c0 !important;
+    border-radius: 9px !important;
     font-size: 0.8rem !important;
+    font-weight: 600 !important;
     box-shadow: none !important;
+    transition: all 0.18s !important;
 }
-button[kind="secondary"]:hover {
-    background: rgba(255,60,60,0.1) !important;
-    border-color: rgba(255,60,60,0.3) !important;
-    color: #ff8080 !important;
+.stButton > button:hover {
+    background: #fee2e2 !important;
+    border-color: #fca5a5 !important;
+    color: #ef4444 !important;
     transform: none !important;
-    box-shadow: none !important;
 }
 
-/* ═══════════════════════════════════════════════════════
-   EMPTY / LANDING STATE
-═══════════════════════════════════════════════════════ */
-.landing {
-    text-align: center;
-    padding: 4rem 2rem;
-    background: rgba(8,8,24,0.4);
-    border: 1px dashed rgba(74,74,255,0.2);
-    border-radius: 20px;
-}
-.landing-icon { font-size: 4rem; margin-bottom: 1rem; opacity: 0.6; }
-.landing-title {
-    font-size: 1.3rem;
-    font-weight: 700;
-    color: #4040a0;
-    margin-bottom: 0.5rem;
-}
-.landing-steps {
-    display: flex;
-    justify-content: center;
-    gap: 2rem;
-    margin-top: 2rem;
-    flex-wrap: wrap;
-}
-.landing-step {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-    max-width: 130px;
-}
-.landing-step-num {
-    width: 32px; height: 32px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #4a4aff, #8b5cf6);
-    color: white;
-    font-size: 0.85rem;
-    font-weight: 700;
-    display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 0 12px rgba(74,74,255,0.4);
-}
-.landing-step-text { font-size: 0.78rem; color: #3a3a70; text-align: center; }
-
-/* ═══════════════════════════════════════════════════════
+/* ════════════════════════
    TREE VIEW
-═══════════════════════════════════════════════════════ */
-.tree-header {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 1.2rem;
-    padding-bottom: 1rem;
-    border-bottom: 1px solid rgba(74,74,255,0.12);
+════════════════════════ */
+.tree-hdr {
+    display: flex; align-items: center; gap: 12px;
+    padding-bottom: 1rem; margin-bottom: 1.2rem;
+    border-bottom: 1.5px solid #ede9fc;
 }
-.tree-title {
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: #e0e0ff;
-}
-.tree-doc-badge {
-    background: rgba(74,74,255,0.12);
-    border: 1px solid rgba(74,74,255,0.25);
-    color: #8888d0;
-    font-size: 0.75rem;
-    padding: 3px 10px;
-    border-radius: 20px;
+.tree-title { font-size: 1.1rem; font-weight: 800; color: #1e1b4b; }
+.tree-badge {
+    background: #f0eeff; border: 1.5px solid #d4cefd;
+    color: #5b5bd6; font-size: 0.73rem; font-weight: 700;
+    padding: 3px 11px; border-radius: 20px;
     font-family: 'JetBrains Mono', monospace;
 }
-
-.tree-node {
-    background: rgba(10,10,30,0.6);
-    border: 1px solid rgba(74,74,255,0.12);
-    border-radius: 10px;
-    padding: 10px 14px;
+.tree-meta {
+    margin-left: auto; display: flex; gap: 8px;
+}
+.tree-tag {
+    background: #f5f3ff; border: 1.5px solid #e4defc;
+    color: #7c74c9; font-size: 0.7rem; font-weight: 600;
+    padding: 3px 10px; border-radius: 20px;
+}
+.tnode {
+    background: #ffffff;
+    border: 1.5px solid #ede9fc;
+    border-radius: 11px;
+    padding: 11px 15px;
     margin: 6px 0;
-    transition: border-color 0.2s;
+    transition: border-color 0.18s, box-shadow 0.18s;
+    box-shadow: 0 1px 4px rgba(99,102,241,0.05);
 }
-.tree-node:hover { border-color: rgba(74,74,255,0.35); }
-.tree-node-id {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.7rem;
-    color: #4a4aff;
-    font-weight: 600;
-}
-.tree-node-title { font-size: 0.9rem; font-weight: 600; color: #c0c0ff; margin: 2px 0; }
-.tree-node-summary { font-size: 0.78rem; color: #5050a0; line-height: 1.5; }
-.tree-children { margin-left: 20px; border-left: 2px solid rgba(74,74,255,0.15); padding-left: 12px; }
+.tnode:hover { border-color: #c4b8f5; box-shadow: 0 3px 12px rgba(99,102,241,0.1); }
+.tnode-id { font-family:'JetBrains Mono',monospace; font-size:0.68rem; color:#6366f1; font-weight:700; }
+.tnode-title { font-size:0.9rem; font-weight:700; color:#1e1b4b; margin:3px 0 2px; }
+.tnode-sum { font-size:0.78rem; color:#8080b8; line-height:1.5; }
+.tchildren { margin-left:18px; border-left:2px solid #e0dcfa; padding-left:12px; margin-top:4px; }
 
-/* Code blocks */
+/* code blocks */
 .stCodeBlock > div {
-    background: rgba(8,8,24,0.8) !important;
-    border: 1px solid rgba(74,74,255,0.15) !important;
-    border-radius: 10px !important;
+    background: #f8f6ff !important;
+    border: 1.5px solid #e4defc !important;
+    border-radius: 11px !important;
     font-family: 'JetBrains Mono', monospace !important;
     font-size: 0.8rem !important;
+    color: #2d2b6b !important;
 }
 
-/* ═══════════════════════════════════════════════════════
+/* ════════════════════════
    HOW IT WORKS
-═══════════════════════════════════════════════════════ */
-.flow-container {
-    display: flex;
-    align-items: stretch;
-    gap: 0;
-    margin: 2rem 0;
-    flex-wrap: wrap;
-}
-.flow-step {
-    flex: 1;
-    min-width: 180px;
-    background: linear-gradient(135deg, rgba(12,12,35,0.9), rgba(18,18,50,0.9));
-    border: 1px solid rgba(74,74,255,0.15);
-    border-radius: 14px;
-    padding: 1.4rem 1.2rem;
+════════════════════════ */
+.flow-row { display:flex; align-items:stretch; gap:0; margin: 1.8rem 0; flex-wrap:wrap; }
+.flow-card {
+    flex:1; min-width:165px;
+    background:#ffffff;
+    border:1.5px solid #e8e3fc;
+    border-radius:16px;
+    padding:1.4rem 1.2rem;
+    box-shadow:0 2px 12px rgba(99,102,241,0.07);
+    transition: transform 0.18s, box-shadow 0.18s;
     position: relative;
-    transition: transform 0.2s, border-color 0.2s;
 }
-.flow-step:hover { transform: translateY(-3px); border-color: rgba(74,74,255,0.4); }
-.flow-step-num {
-    width: 30px; height: 30px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #4a4aff, #8b5cf6);
-    color: white;
-    font-size: 0.8rem;
-    font-weight: 700;
-    display: flex; align-items: center; justify-content: center;
-    margin-bottom: 0.8rem;
-    box-shadow: 0 0 12px rgba(74,74,255,0.4);
+.flow-card::before {
+    content:''; position:absolute; top:0; left:0; right:0; height:3px;
+    background:linear-gradient(90deg,#6366f1,#8b5cf6);
+    border-radius:16px 16px 0 0;
 }
-.flow-step-icon { font-size: 1.6rem; margin-bottom: 0.5rem; }
-.flow-step-title { font-size: 0.9rem; font-weight: 700; color: #c0c0ff; margin-bottom: 0.4rem; }
-.flow-step-desc { font-size: 0.78rem; color: #5050a0; line-height: 1.55; }
-.flow-arrow {
-    display: flex;
-    align-items: center;
-    padding: 0 8px;
-    color: rgba(74,74,255,0.4);
-    font-size: 1.3rem;
-    flex-shrink: 0;
+.flow-card:hover { transform:translateY(-3px); box-shadow:0 8px 28px rgba(99,102,241,0.15); }
+.flow-arrow { display:flex; align-items:center; padding:0 10px; color:#c4b8f5; font-size:1.4rem; flex-shrink:0; }
+.flow-num {
+    width:28px; height:28px; border-radius:50%;
+    background:linear-gradient(135deg,#6366f1,#8b5cf6);
+    color:white; font-size:0.78rem; font-weight:800;
+    display:flex; align-items:center; justify-content:center;
+    margin-bottom:0.7rem;
+    box-shadow:0 3px 10px rgba(99,102,241,0.35);
 }
+.flow-ico { font-size:1.6rem; margin-bottom:0.5rem; }
+.flow-h { font-size:0.9rem; font-weight:700; color:#1e1b4b; margin-bottom:0.35rem; }
+.flow-p { font-size:0.78rem; color:#8080b8; line-height:1.55; }
 
-.compare-table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
-    border-radius: 12px;
-    overflow: hidden;
-    margin: 1.5rem 0;
-    border: 1px solid rgba(74,74,255,0.15);
+/* compare table */
+.cmp-tbl { width:100%; border-collapse:separate; border-spacing:0;
+           border-radius:14px; overflow:hidden;
+           border:1.5px solid #e8e3fc; margin:1.5rem 0;
+           box-shadow:0 2px 12px rgba(99,102,241,0.07); }
+.cmp-tbl th {
+    background:linear-gradient(135deg,#6366f1,#8b5cf6);
+    color:#ffffff; font-size:0.78rem; font-weight:700;
+    letter-spacing:0.06em; text-transform:uppercase;
+    padding:13px 18px; text-align:left;
 }
-.compare-table th {
-    background: rgba(74,74,255,0.12);
-    color: #a5b4fc;
-    font-size: 0.8rem;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    padding: 12px 16px;
-    text-align: left;
-    border-bottom: 1px solid rgba(74,74,255,0.2);
+.cmp-tbl td {
+    background:#ffffff; color:#6b6ba8; font-size:0.86rem;
+    padding:11px 18px; border-bottom:1px solid #f0ecfd;
 }
-.compare-table td {
-    background: rgba(8,8,24,0.6);
-    color: #9090c0;
-    font-size: 0.85rem;
-    padding: 11px 16px;
-    border-bottom: 1px solid rgba(74,74,255,0.07);
-}
-.compare-table tr:last-child td { border-bottom: none; }
-.compare-table td.win {
-    color: #86efac;
-    font-weight: 600;
-}
-.compare-table td.lose { color: #f87171; }
+.cmp-tbl tr:last-child td { border-bottom:none; }
+.cmp-tbl tr:hover td { background:#faf8ff; }
+.win { color:#16a34a !important; font-weight:700; }
+.lose { color:#dc2626 !important; }
 
-.provider-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    gap: 10px;
-    margin-top: 1rem;
+/* provider grid */
+.prov-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); gap:10px; margin-top:1rem; }
+.prov-card {
+    background:#ffffff; border:1.5px solid #ede9fc;
+    border-radius:12px; padding:14px 10px; text-align:center;
+    box-shadow:0 2px 8px rgba(99,102,241,0.06);
+    transition:all 0.18s;
 }
-.provider-card {
-    background: rgba(10,10,30,0.6);
-    border: 1px solid rgba(74,74,255,0.12);
-    border-radius: 10px;
-    padding: 12px;
-    text-align: center;
-    transition: all 0.2s;
-}
-.provider-card:hover { border-color: rgba(74,74,255,0.35); transform: translateY(-2px); }
-.provider-card-icon { font-size: 1.4rem; margin-bottom: 4px; }
-.provider-card-name { font-size: 0.75rem; color: #6060a0; font-weight: 600; }
-.provider-card-type { font-size: 0.65rem; color: #3a3a60; margin-top: 2px; }
+.prov-card:hover { border-color:#c4b8f5; transform:translateY(-2px); box-shadow:0 5px 18px rgba(99,102,241,0.13); }
+.prov-ico { font-size:1.5rem; margin-bottom:5px; }
+.prov-name { font-size:0.75rem; color:#1e1b4b; font-weight:700; }
+.prov-type { font-size:0.65rem; color:#a0a0c8; margin-top:2px; }
 
-/* Status messages */
-[data-testid="stAlert"] {
-    border-radius: 10px !important;
-    border-left-width: 3px !important;
-}
+/* alert overrides */
+[data-testid="stAlert"] { border-radius:10px !important; }
 
-/* Dividers */
-hr { border-color: rgba(74,74,255,0.1) !important; margin: 1rem 0 !important; }
-
-/* Metric */
-[data-testid="metric-container"] {
-    background: rgba(10,10,30,0.6) !important;
-    border: 1px solid rgba(74,74,255,0.12) !important;
-    border-radius: 12px !important;
-    padding: 14px !important;
+/* section headings */
+.sec-h2 {
+    font-size:1.45rem; font-weight:800; color:#1e1b4b;
+    letter-spacing:-0.02em; margin-bottom:0.3rem;
 }
+.sec-sub { font-size:0.9rem; color:#8080b8; line-height:1.6; margin-bottom:1.4rem; }
 </style>
 """, unsafe_allow_html=True)
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
+# ══════════════════════════════════════════════════════════════════
 # SESSION STATE
-# ═══════════════════════════════════════════════════════════════════════════════
-def _init_state() -> None:
-    defaults = {
-        "pipeline": None,
-        "tree": None,
-        "doc_name": "",
-        "messages": [],
-        "indexed": False,
-        "index_time": 0.0,
-    }
-    for k, v in defaults.items():
+# ══════════════════════════════════════════════════════════════════
+def _init():
+    defs = dict(pipeline=None, tree=None, doc_name="", messages=[],
+                indexed=False, index_time=0.0)
+    for k, v in defs.items():
         if k not in st.session_state:
             st.session_state[k] = v
 
-_init_state()
+_init()
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
+# ══════════════════════════════════════════════════════════════════
 # HELPERS
-# ═══════════════════════════════════════════════════════════════════════════════
-def _count_nodes(node: dict) -> int:
-    if not node:
-        return 0
-    return 1 + sum(_count_nodes(c) for c in node.get("children", []))
+# ══════════════════════════════════════════════════════════════════
+def _count(n):
+    return 0 if not n else 1 + sum(_count(c) for c in n.get("children", []))
 
-def _count_depth(node: dict, d: int = 0) -> int:
-    if not node or not node.get("children"):
-        return d
-    return max(_count_depth(c, d + 1) for c in node["children"])
+def _depth(n, d=0):
+    if not n or not n.get("children"): return d
+    return max(_depth(c, d+1) for c in n["children"])
 
-def _render_tree_nodes(node: dict, depth: int = 0) -> str:
-    indent = depth * 20
-    children_html = "".join(_render_tree_nodes(c, depth + 1) for c in node.get("children", []))
-    children_wrap = f'<div class="tree-children">{children_html}</div>' if children_html else ""
-    summary = node.get("summary", "")
-    summary_html = f'<div class="tree-node-summary">{summary[:120]}{"…" if len(summary)>120 else ""}</div>' if summary else ""
+def _tree_html(node, indent=0):
+    ml = indent * 18
+    children = node.get("children", [])
+    ch_html = "".join(_tree_html(c, indent+1) for c in children)
+    ch_wrap = f'<div class="tchildren">{ch_html}</div>' if ch_html else ""
+    s = node.get("summary","")
+    s_html = f'<div class="tnode-sum">{s[:130]}{"…" if len(s)>130 else ""}</div>' if s else ""
     return f"""
-<div class="tree-node" style="margin-left:{indent}px">
-  <div class="tree-node-id"># {node.get('id','?')}</div>
-  <div class="tree-node-title">{node.get('title','Untitled')}</div>
-  {summary_html}
-</div>
-{children_wrap}
-"""
+<div class="tnode" style="margin-left:{ml}px">
+  <div class="tnode-id"># {node.get("id","?")}</div>
+  <div class="tnode-title">{node.get("title","—")}</div>
+  {s_html}
+</div>{ch_wrap}"""
 
-def _get_settings() -> Settings:
+def _cfg():
+    env = Settings.from_env()
     return Settings(
-        llm_base_url=st.session_state.get("llm_base_url", Settings.from_env().llm_base_url),
-        llm_api_key=st.session_state.get("llm_api_key", Settings.from_env().llm_api_key or "lm-studio"),
-        llm_model=st.session_state.get("llm_model", Settings.from_env().llm_model),
-        toc_check_pages=st.session_state.get("toc_pages", 20),
-        max_pages_per_node=st.session_state.get("max_pages", 10),
-        max_tokens_per_node=st.session_state.get("max_tokens", 20000),
-        results_dir=Path("results"),
+        llm_base_url  = st.session_state.get("llm_base_url",  env.llm_base_url),
+        llm_api_key   = st.session_state.get("llm_api_key",   env.llm_api_key or "lm-studio"),
+        llm_model     = st.session_state.get("llm_model",     env.llm_model),
+        toc_check_pages   = st.session_state.get("toc_pg",  20),
+        max_pages_per_node= st.session_state.get("max_pg",  10),
+        max_tokens_per_node=st.session_state.get("max_tok", 20000),
+        results_dir   = Path("results"),
     )
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
+# ══════════════════════════════════════════════════════════════════
 # SIDEBAR
-# ═══════════════════════════════════════════════════════════════════════════════
+# ══════════════════════════════════════════════════════════════════
 with st.sidebar:
-
     st.markdown("""
-    <div class="sidebar-logo">
-        <div class="sidebar-logo-icon">📑</div>
-        <div class="sidebar-logo-text">
-            <div class="sidebar-logo-title">PageIndex</div>
-            <div class="sidebar-logo-sub">Vectorless RAG</div>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-    # ── LLM Config ──
-    st.markdown('<div class="sidebar-section-label">⚡ LLM Endpoint</div>', unsafe_allow_html=True)
+    <div class="sb-logo">
+      <div class="sb-logo-icon">📑</div>
+      <div>
+        <div class="sb-logo-name">PageIndex</div>
+        <div class="sb-logo-tag">Vectorless RAG</div>
+      </div>
+    </div>""", unsafe_allow_html=True)
 
     env = Settings.from_env()
-    st.text_input("Base URL", value=env.llm_base_url,
-                  help="Any OpenAI-compatible endpoint", key="llm_base_url")
-    st.text_input("API Key", value=env.llm_api_key or "lm-studio",
-                  type="password", help="Use any string for local servers", key="llm_api_key")
-    st.text_input("Model", value=env.llm_model,
-                  help="Model name from /v1/models", key="llm_model")
 
-    # Quick preset buttons
-    st.markdown('<div class="sidebar-section-label">🚀 Quick Presets</div>', unsafe_allow_html=True)
+    st.markdown('<div class="sb-section">⚡ LLM Endpoint</div>', unsafe_allow_html=True)
+    st.text_input("Base URL", value=env.llm_base_url,  key="llm_base_url",
+                  help="Any OpenAI-compatible API endpoint")
+    st.text_input("API Key",  value=env.llm_api_key or "lm-studio",
+                  type="password", key="llm_api_key",
+                  help="Any non-empty string for local servers")
+    st.text_input("Model",    value=env.llm_model, key="llm_model",
+                  help="Exact model name from /v1/models")
+
+    st.markdown('<div class="sb-section">🚀 Quick Presets</div>', unsafe_allow_html=True)
     c1, c2 = st.columns(2)
     if c1.button("LM Studio", use_container_width=True):
-        st.session_state["llm_base_url"] = "http://localhost:1234/v1"
-        st.session_state["llm_api_key"] = "lm-studio"
-        st.rerun()
+        st.session_state.llm_base_url = "http://localhost:1234/v1"
+        st.session_state.llm_api_key  = "lm-studio"; st.rerun()
     if c2.button("Ollama", use_container_width=True):
-        st.session_state["llm_base_url"] = "http://localhost:11434/v1"
-        st.session_state["llm_api_key"] = "ollama"
-        st.rerun()
+        st.session_state.llm_base_url = "http://localhost:11434/v1"
+        st.session_state.llm_api_key  = "ollama"; st.rerun()
     c3, c4 = st.columns(2)
     if c3.button("OpenAI", use_container_width=True):
-        st.session_state["llm_base_url"] = "https://api.openai.com/v1"
-        st.rerun()
+        st.session_state.llm_base_url = "https://api.openai.com/v1"; st.rerun()
     if c4.button("vLLM", use_container_width=True):
-        st.session_state["llm_base_url"] = "http://localhost:8000/v1"
-        st.rerun()
+        st.session_state.llm_base_url = "http://localhost:8000/v1"; st.rerun()
 
-    # ── Advanced ──
-    st.markdown('<div class="sidebar-section-label">⚙️ Index Settings</div>', unsafe_allow_html=True)
-    with st.expander("Tune Parameters"):
-        st.slider("ToC scan pages", 5, 50, 20, key="toc_pages")
-        st.slider("Max pages / node", 1, 20, 10, key="max_pages")
-        st.slider("Max tokens / node", 5000, 40000, 20000, step=1000, key="max_tokens")
-        st.slider("Retrieve top-k sections", 1, 10, 5, key="top_k")
+    st.markdown('<div class="sb-section">⚙️ Index Tuning</div>', unsafe_allow_html=True)
+    with st.expander("Parameters"):
+        st.slider("ToC scan pages",         5,  50,   20, key="toc_pg")
+        st.slider("Max pages / node",       1,  20,   10, key="max_pg")
+        st.slider("Max tokens / node",   5000, 40000, 20000, step=1000, key="max_tok")
+        st.slider("Retrieve top-k",         1,  10,    5, key="top_k")
 
-    # ── Upload ──
-    st.markdown('<div class="sidebar-section-label">📄 Document</div>', unsafe_allow_html=True)
+    st.markdown('<div class="sb-section">📄 Document</div>', unsafe_allow_html=True)
     uploaded = st.file_uploader("Upload PDF or Markdown",
-                                type=["pdf", "md", "markdown"],
+                                type=["pdf","md","markdown"],
                                 label_visibility="collapsed")
 
     if uploaded:
         kb = round(len(uploaded.getvalue()) / 1024, 1)
-        st.markdown(f"<div style='font-size:0.78rem;color:#5050a0;margin:-4px 0 8px 0;'>📄 <code style='color:#7070c0'>{uploaded.name}</code> &nbsp;·&nbsp; {kb} KB</div>", unsafe_allow_html=True)
+        st.markdown(
+            f"<p style='font-size:0.76rem;color:#9090c4;margin:-2px 0 8px;'>"
+            f"📄 <code style='color:#5b5bd6'>{uploaded.name}</code> · {kb} KB</p>",
+            unsafe_allow_html=True)
 
         if st.button("🔍  Build Vectorless Index", type="primary", use_container_width=True):
             st.session_state.messages = []
-            st.session_state.indexed = False
-            st.session_state.tree = None
-
-            settings = _get_settings()
-            suffix = Path(uploaded.name).suffix.lower()
+            st.session_state.indexed  = False
+            st.session_state.tree     = None
+            settings = _cfg()
+            suffix   = Path(uploaded.name).suffix.lower()
 
             with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
                 tmp.write(uploaded.getvalue())
                 tmp_path = Path(tmp.name)
 
-            with st.spinner("Building tree index via LLM…"):
+            with st.spinner("Building tree via LLM…"):
                 t0 = time.time()
                 try:
-                    indexer = Indexer(settings)
-                    tree = indexer.index_pdf(tmp_path) if suffix == ".pdf" else indexer.index_markdown(tmp_path)
-
+                    ix   = Indexer(settings)
+                    tree = ix.index_pdf(tmp_path) if suffix == ".pdf" else ix.index_markdown(tmp_path)
                     stem = Path(uploaded.name).stem
-                    out = settings.results_dir / f"{stem}_index.json"
-                    with open(out, "w", encoding="utf-8") as f:
-                        json.dump(tree, f, indent=2, ensure_ascii=False)
+                    out  = settings.results_dir / f"{stem}_index.json"
+                    out.write_text(json.dumps(tree, indent=2, ensure_ascii=False), encoding="utf-8")
 
-                    pipeline = RAGPipeline(settings)
-                    pipeline._tree = tree
-                    pipeline._doc_name = stem
+                    pipe = RAGPipeline(settings)
+                    pipe._tree = tree; pipe._doc_name = stem
 
-                    st.session_state.pipeline  = pipeline
-                    st.session_state.tree      = tree
-                    st.session_state.doc_name  = stem
-                    st.session_state.indexed   = True
-                    st.session_state.index_time = round(time.time() - t0, 1)
-
-                except Exception as exc:
-                    st.error(f"Indexing failed: {exc}")
+                    st.session_state.update(
+                        pipeline=pipe, tree=tree, doc_name=stem,
+                        indexed=True, index_time=round(time.time()-t0, 1))
+                except Exception as e:
+                    st.error(f"Indexing failed: {e}")
                 finally:
                     tmp_path.unlink(missing_ok=True)
 
-    # Status
     st.markdown("")
     if st.session_state.indexed:
         st.markdown(f"""
-        <div style="background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.25);
-                    border-radius:10px;padding:10px 14px;">
-            <div style="color:#4ade80;font-size:0.8rem;font-weight:700;">✅ Index Ready</div>
-            <div style="color:#166534;font-size:0.72rem;margin-top:2px;">
-                {st.session_state.doc_name} &nbsp;·&nbsp; {st.session_state.index_time}s
-            </div>
+        <div style="background:#f0fdf4;border:1.5px solid #bbf7d0;
+                    border-radius:11px;padding:11px 15px;">
+          <div style="color:#15803d;font-size:0.82rem;font-weight:700;">✅ Index Ready</div>
+          <div style="color:#4ade80;font-size:0.72rem;margin-top:2px;font-family:'JetBrains Mono',monospace;">
+            {st.session_state.doc_name} · {st.session_state.index_time}s
+          </div>
         </div>""", unsafe_allow_html=True)
     else:
         st.markdown("""
-        <div style="background:rgba(74,74,255,0.06);border:1px solid rgba(74,74,255,0.15);
-                    border-radius:10px;padding:10px 14px;text-align:center;">
-            <div style="color:#4040a0;font-size:0.78rem;">Upload a document above to begin</div>
+        <div style="background:#f5f3ff;border:1.5px dashed #c4b8f5;
+                    border-radius:11px;padding:11px 15px;text-align:center;">
+          <div style="color:#7c74c9;font-size:0.78rem;">Upload a document above to begin</div>
         </div>""", unsafe_allow_html=True)
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
+# ══════════════════════════════════════════════════════════════════
 # HERO
-# ═══════════════════════════════════════════════════════════════════════════════
-is_local = "api.openai.com" not in st.session_state.get("llm_base_url", "")
-endpoint_label = "Local Server" if is_local else "Cloud API"
-endpoint_color = "#4ade80" if is_local else "#60a5fa"
+# ══════════════════════════════════════════════════════════════════
+is_local = "api.openai.com" not in st.session_state.get("llm_base_url","")
+ep_label = "Local Server" if is_local else "Cloud API"
+ep_color = "#16a34a"      if is_local else "#2563eb"
 
 st.markdown(f"""
 <div class="hero">
-    <div class="hero-badge">
-        <span class="hero-badge-dot"></span>
-        Vectorless RAG Engine
-    </div>
-    <div class="hero-title">PageIndex — No Vectors. Pure Reasoning.</div>
-    <div class="hero-subtitle">
-        Document Q&amp;A that thinks like a human expert: navigate a structured knowledge tree,
-        not a sea of embeddings. Works with any LLM, any format, zero infrastructure.
-    </div>
-    <div class="hero-pills">
-        <span class="hero-pill">📄 PDF &amp; Markdown</span>
-        <span class="hero-pill">🌳 Hierarchical Tree Index</span>
-        <span class="hero-pill">🧠 LLM-Driven Retrieval</span>
-        <span class="hero-pill">🚫 No Vector DB</span>
-        <span class="hero-pill">🚫 No Embeddings</span>
-        <span class="hero-pill" style="color:{endpoint_color}">⚡ {endpoint_label}</span>
-    </div>
+  <div class="hero-badge"><span class="hero-dot"></span>Vectorless RAG Engine · Open Source</div>
+  <div class="hero-title">PageIndex — No Vectors.<br>Pure Reasoning.</div>
+  <div class="hero-sub">
+    Document Q&amp;A that thinks like a human expert: navigate a structured
+    knowledge tree instead of drowning in embeddings.
+    Works with any LLM, any format, zero infrastructure overhead.
+  </div>
+  <div class="hero-pills">
+    <span class="hero-pill">📄 PDF &amp; Markdown</span>
+    <span class="hero-pill">🌳 Hierarchical Tree Index</span>
+    <span class="hero-pill">🧠 LLM-Driven Retrieval</span>
+    <span class="hero-pill">🚫 No Vector DB</span>
+    <span class="hero-pill">🚫 No Embeddings</span>
+    <span class="hero-pill hero-pill-hi" style="color:{ep_color}">⚡ {ep_label}</span>
+  </div>
 </div>
 """, unsafe_allow_html=True)
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
+# ══════════════════════════════════════════════════════════════════
 # TABS
-# ═══════════════════════════════════════════════════════════════════════════════
+# ══════════════════════════════════════════════════════════════════
 tab_chat, tab_tree, tab_how = st.tabs(["💬  Chat", "🌳  Document Tree", "ℹ️  How It Works"])
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# TAB — CHAT
-# ═══════════════════════════════════════════════════════════════════════════════
+# ──────────────────────────────────────────────
+# TAB: CHAT
+# ──────────────────────────────────────────────
 with tab_chat:
 
     if not st.session_state.indexed:
-        # ── Landing state ──
         st.markdown("""
         <div class="landing">
-            <div class="landing-icon">📑</div>
-            <div class="landing-title">Upload a document to start asking questions</div>
-            <div style="color:#303060;font-size:0.85rem;">Supports PDF and Markdown files</div>
-            <div class="landing-steps">
-                <div class="landing-step">
-                    <div class="landing-step-num">1</div>
-                    <div style="font-size:1.5rem">📄</div>
-                    <div class="landing-step-text">Upload your document in the sidebar</div>
-                </div>
-                <div class="landing-step">
-                    <div class="landing-step-num">2</div>
-                    <div style="font-size:1.5rem">🌳</div>
-                    <div class="landing-step-text">Click Build Index — LLM creates a tree</div>
-                </div>
-                <div class="landing-step">
-                    <div class="landing-step-num">3</div>
-                    <div style="font-size:1.5rem">💬</div>
-                    <div class="landing-step-text">Ask anything, get cited answers</div>
-                </div>
+          <div class="landing-icon">📑</div>
+          <div class="landing-h">Upload a document to start asking questions</div>
+          <div class="landing-p">Supports PDF and Markdown · Index is built once, reused forever</div>
+          <div class="step-row">
+            <div class="step-col">
+              <div class="step-num">1</div>
+              <div class="step-emoji">📄</div>
+              <div class="step-txt">Upload your document in the sidebar</div>
             </div>
-        </div>
-        """, unsafe_allow_html=True)
+            <div class="step-col">
+              <div class="step-num">2</div>
+              <div class="step-emoji">🌳</div>
+              <div class="step-txt">Click Build Index — LLM creates a tree</div>
+            </div>
+            <div class="step-col">
+              <div class="step-num">3</div>
+              <div class="step-emoji">💬</div>
+              <div class="step-txt">Ask anything and get cited answers</div>
+            </div>
+          </div>
+        </div>""", unsafe_allow_html=True)
 
     else:
-        # ── Stats row ──
+        # ── Stats ──
         tree = st.session_state.tree
-        node_count  = _count_nodes(tree)
-        depth       = _count_depth(tree)
-        q_count     = len([m for m in st.session_state.messages if m["role"] == "user"])
+        nc   = _count(tree)
+        dep  = _depth(tree)
+        nq   = sum(1 for m in st.session_state.messages if m["role"] == "user")
+        ep_s = "🟢 Local" if is_local else "🔵 Cloud"
 
         st.markdown(f"""
-        <div class="stat-grid">
-            <div class="stat-card">
-                <div class="stat-icon stat-icon-blue">🌳</div>
-                <div class="stat-body">
-                    <div class="stat-value">{node_count}</div>
-                    <div class="stat-label">Index Nodes</div>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon stat-icon-purple">📐</div>
-                <div class="stat-body">
-                    <div class="stat-value">{depth}</div>
-                    <div class="stat-label">Tree Depth</div>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon stat-icon-amber">💬</div>
-                <div class="stat-body">
-                    <div class="stat-value">{q_count}</div>
-                    <div class="stat-label">Questions Asked</div>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon stat-icon-green">{"🟢" if is_local else "🔵"}</div>
-                <div class="stat-body">
-                    <div class="stat-value" style="font-size:1rem;padding-top:4px;">{"Local" if is_local else "Cloud"}</div>
-                    <div class="stat-label">LLM Mode</div>
-                </div>
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
+        <div class="stat-row">
+          <div class="stat-card">
+            <div class="stat-icon si-indigo">🌳</div>
+            <div><div class="stat-val">{nc}</div><div class="stat-lbl">Index Nodes</div></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon si-violet">📐</div>
+            <div><div class="stat-val">{dep}</div><div class="stat-lbl">Tree Depth</div></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon si-amber">💬</div>
+            <div><div class="stat-val">{nq}</div><div class="stat-lbl">Questions</div></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon si-green">{"🟢" if is_local else "🔵"}</div>
+            <div><div class="stat-val" style="font-size:1rem;padding-top:5px;">{"Local" if is_local else "Cloud"}</div>
+                 <div class="stat-lbl">LLM Mode</div></div>
+          </div>
+        </div>""", unsafe_allow_html=True)
 
-        # ── Chat history ──
-        messages_html = ""
+        # ── Messages ──
         if not st.session_state.messages:
-            messages_html = """
+            msgs_html = """
             <div class="chat-empty">
-                <div class="chat-empty-icon">💭</div>
-                <div class="chat-empty-title">No messages yet</div>
-                <div class="chat-empty-sub">Type your first question below</div>
+              <div class="chat-empty-ico">💭</div>
+              <div class="chat-empty-h">No messages yet</div>
+              <div class="chat-empty-s">Ask your first question below</div>
             </div>"""
         else:
-            for msg in st.session_state.messages:
-                if msg["role"] == "user":
-                    messages_html += f"""
+            msgs_html = ""
+            for m in st.session_state.messages:
+                if m["role"] == "user":
+                    msgs_html += f"""
                     <div class="msg-row msg-row-user">
-                        <div class="msg-avatar msg-avatar-user">🧑</div>
-                        <div class="msg-body">
-                            <div class="msg-bubble msg-bubble-user">{msg["content"]}</div>
-                        </div>
+                      <div class="avatar av-user">🧑</div>
+                      <div class="msg-body">
+                        <div class="bubble bubble-user">{m["content"]}</div>
+                      </div>
                     </div>"""
                 else:
-                    sources_html = ""
-                    if msg.get("sources"):
+                    chips = ""
+                    if m.get("sources"):
                         chips = "".join(
-                            f'<span class="source-chip">📎 {s["title"]}</span>'
-                            for s in msg["sources"] if s.get("title")
-                        )
+                            f'<span class="src-chip">📎 {s["title"]}</span>'
+                            for s in m["sources"] if s.get("title"))
                         if chips:
-                            sources_html = f'<div class="sources-row">{chips}</div>'
-                    messages_html += f"""
+                            chips = f'<div class="src-row">{chips}</div>'
+                    msgs_html += f"""
                     <div class="msg-row">
-                        <div class="msg-avatar msg-avatar-ai">🤖</div>
-                        <div class="msg-body">
-                            <div class="msg-bubble msg-bubble-ai">
-                                {msg["content"]}
-                                {sources_html}
-                            </div>
-                        </div>
+                      <div class="avatar av-ai">🤖</div>
+                      <div class="msg-body">
+                        <div class="bubble bubble-ai">{m["content"]}{chips}</div>
+                      </div>
                     </div>"""
 
-        st.markdown(f'<div class="chat-wrapper">{messages_html}</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="chat-box">{msgs_html}</div>', unsafe_allow_html=True)
 
         # ── Input ──
-        st.markdown('<div class="chat-input-area">', unsafe_allow_html=True)
-        with st.form("chat_form", clear_on_submit=True):
+        st.markdown('<div class="input-wrap">', unsafe_allow_html=True)
+        with st.form("qform", clear_on_submit=True):
             cols = st.columns([6, 1])
-            question = cols[0].text_input(
-                "q", label_visibility="collapsed",
-                placeholder="Ask anything about the document…"
-            )
+            q    = cols[0].text_input("q", label_visibility="collapsed",
+                                      placeholder="Ask anything about the document…")
             send = cols[1].form_submit_button("Send ➤", use_container_width=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
-        if send and question.strip():
-            pipeline: RAGPipeline = st.session_state.pipeline
-            settings = _get_settings()
-            pipeline.settings = settings
-            pipeline.retriever.settings = settings
-            pipeline.retriever.settings.apply_to_environment()
-
-            st.session_state.messages.append({"role": "user", "content": question})
+        if send and q.strip():
+            pipe: RAGPipeline = st.session_state.pipeline
+            cfg = _cfg()
+            pipe.settings = cfg
+            pipe.retriever.settings = cfg
+            cfg.apply_to_environment()
+            st.session_state.messages.append({"role":"user","content":q})
             with st.spinner("Navigating document tree…"):
                 try:
-                    result = pipeline.ask(question,
-                                          top_k=st.session_state.get("top_k", 5),
-                                          return_sources=True)
-                    st.session_state.messages.append({
-                        "role": "assistant",
-                        "content": result["answer"],
-                        "sources": result.get("sources", []),
-                    })
-                except Exception as exc:
-                    st.session_state.messages.append({
-                        "role": "assistant",
-                        "content": f"⚠️ Error: {exc}",
-                        "sources": [],
-                    })
+                    res = pipe.ask(q, top_k=st.session_state.get("top_k",5), return_sources=True)
+                    st.session_state.messages.append(
+                        {"role":"assistant","content":res["answer"],"sources":res.get("sources",[])})
+                except Exception as e:
+                    st.session_state.messages.append(
+                        {"role":"assistant","content":f"⚠️ {e}","sources":[]})
             st.rerun()
 
-        # Clear button
         if st.session_state.messages:
-            if st.button("🗑️ Clear conversation", type="secondary"):
-                st.session_state.messages = []
-                st.rerun()
+            if st.button("🗑️  Clear conversation"):
+                st.session_state.messages = []; st.rerun()
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# TAB — DOCUMENT TREE
-# ═══════════════════════════════════════════════════════════════════════════════
+# ──────────────────────────────────────────────
+# TAB: TREE
+# ──────────────────────────────────────────────
 with tab_tree:
-    if not st.session_state.indexed or not st.session_state.tree:
+    if not st.session_state.indexed:
         st.markdown("""
         <div class="landing" style="padding:2.5rem">
-            <div style="font-size:2.5rem;opacity:0.4">🌳</div>
-            <div class="landing-title" style="margin-top:0.6rem">No document indexed yet</div>
-            <div style="color:#303060;font-size:0.82rem">Build an index first to explore the document tree</div>
+          <div style="font-size:2.5rem">🌳</div>
+          <div class="landing-h" style="margin-top:0.6rem">No document indexed yet</div>
+          <div class="landing-p">Build an index first to explore the document tree</div>
         </div>""", unsafe_allow_html=True)
     else:
         tree = st.session_state.tree
-        doc  = st.session_state.doc_name
-        nc   = _count_nodes(tree)
-        dep  = _count_depth(tree)
-
+        nc, dep = _count(tree), _depth(tree)
         st.markdown(f"""
-        <div class="tree-header">
-            <div class="tree-title">Document Tree</div>
-            <div class="tree-doc-badge">{doc}</div>
-            <div style="margin-left:auto;display:flex;gap:8px">
-                <span style="background:rgba(74,74,255,0.1);border:1px solid rgba(74,74,255,0.2);
-                      color:#6060c0;font-size:0.72rem;padding:3px 10px;border-radius:20px;">
-                    {nc} nodes
-                </span>
-                <span style="background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.2);
-                      color:#9060c0;font-size:0.72rem;padding:3px 10px;border-radius:20px;">
-                    depth {dep}
-                </span>
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
+        <div class="tree-hdr">
+          <div class="tree-title">Document Tree</div>
+          <div class="tree-badge">{st.session_state.doc_name}</div>
+          <div class="tree-meta">
+            <span class="tree-tag">🗂 {nc} nodes</span>
+            <span class="tree-tag">📏 depth {dep}</span>
+          </div>
+        </div>""", unsafe_allow_html=True)
 
         col_l, col_r = st.columns([3, 2])
-
         with col_l:
             st.markdown("**Interactive Outline**")
-            st.markdown(_render_tree_nodes(tree), unsafe_allow_html=True)
-
+            st.markdown(_tree_html(tree), unsafe_allow_html=True)
         with col_r:
             st.markdown("**Raw Index JSON**")
             raw = json.dumps(tree, indent=2, ensure_ascii=False)
             st.code("\n".join(raw.splitlines()[:150]), language="json")
-
-            st.markdown("<br>", unsafe_allow_html=True)
             st.markdown("**ASCII Tree**")
             st.code(pretty_print_tree(tree), language=None)
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# TAB — HOW IT WORKS
-# ═══════════════════════════════════════════════════════════════════════════════
+# ──────────────────────────────────────────────
+# TAB: HOW IT WORKS
+# ──────────────────────────────────────────────
 with tab_how:
-
     st.markdown("""
-    <h2 style="font-size:1.5rem;font-weight:800;
-               background:linear-gradient(135deg,#ffffff,#a5b4fc);
-               -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-               margin-bottom:0.3rem;">
-        How Vectorless RAG Works
-    </h2>
-    <p style="color:#5050a0;font-size:0.9rem;margin-bottom:1.5rem;">
-        Traditional RAG embeds every chunk into vector space and searches by cosine similarity.
-        PageIndex replaces that with something far more intuitive — LLM reasoning over a structured document tree.
-    </p>
-    """, unsafe_allow_html=True)
-
-    # ── Flow diagram ──
-    st.markdown("""
-    <div class="flow-container">
-        <div class="flow-step">
-            <div class="flow-step-num">1</div>
-            <div class="flow-step-icon">📄</div>
-            <div class="flow-step-title">Parse</div>
-            <div class="flow-step-desc">PDF or Markdown is split into sections preserving natural heading hierarchy and page boundaries.</div>
-        </div>
-        <div class="flow-arrow">→</div>
-        <div class="flow-step">
-            <div class="flow-step-num">2</div>
-            <div class="flow-step-icon">🌳</div>
-            <div class="flow-step-title">Build Tree</div>
-            <div class="flow-step-desc">LLM organises sections into a hierarchical tree — like a smart table of contents. Saved as JSON, never rebuilt.</div>
-        </div>
-        <div class="flow-arrow">→</div>
-        <div class="flow-step">
-            <div class="flow-step-num">3</div>
-            <div class="flow-step-icon">🧭</div>
-            <div class="flow-step-title">Navigate</div>
-            <div class="flow-step-desc">At query time the LLM sees only the tree skeleton (titles + summaries) and reasons about which nodes to visit.</div>
-        </div>
-        <div class="flow-arrow">→</div>
-        <div class="flow-step">
-            <div class="flow-step-num">4</div>
-            <div class="flow-step-icon">💡</div>
-            <div class="flow-step-title">Answer</div>
-            <div class="flow-step-desc">Full text of selected nodes is assembled as context. LLM generates a grounded, cited answer.</div>
-        </div>
+    <div class="sec-h2">How Vectorless RAG Works</div>
+    <div class="sec-sub">
+      Traditional RAG embeds every chunk into a vector space and retrieves by cosine similarity.
+      PageIndex replaces all of that with structured LLM reasoning over a document tree.
     </div>
     """, unsafe_allow_html=True)
 
-    # ── Comparison table ──
     st.markdown("""
-    <h3 style="font-size:1rem;font-weight:700;color:#c0c0ff;margin:2rem 0 0.8rem 0;">
-        PageIndex vs Vector RAG
-    </h3>
-    <table class="compare-table">
-        <thead>
-            <tr>
-                <th>Aspect</th>
-                <th>Vector RAG</th>
-                <th>PageIndex</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr><td>Retrieval mechanism</td><td class="lose">Cosine similarity</td><td class="win">LLM reasoning</td></tr>
-            <tr><td>Context quality</td><td class="lose">Fixed-size chunks</td><td class="win">Whole semantic sections</td></tr>
-            <tr><td>Embedding model</td><td class="lose">Required</td><td class="win">Not needed</td></tr>
-            <tr><td>Vector database</td><td class="lose">Required</td><td class="win">Not needed</td></tr>
-            <tr><td>Infrastructure</td><td class="lose">Complex</td><td class="win">Just an LLM</td></tr>
-            <tr><td>FinanceBench accuracy</td><td class="lose">85–90%</td><td class="win">98.7% ⭐</td></tr>
-        </tbody>
+    <div class="flow-row">
+      <div class="flow-card">
+        <div class="flow-num">1</div>
+        <div class="flow-ico">📄</div>
+        <div class="flow-h">Parse</div>
+        <div class="flow-p">PDF or Markdown is split into sections that respect heading hierarchy and page boundaries.</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-card">
+        <div class="flow-num">2</div>
+        <div class="flow-ico">🌳</div>
+        <div class="flow-h">Build Tree</div>
+        <div class="flow-p">LLM organises sections into a hierarchical tree — a smart table of contents. Saved as JSON, never rebuilt.</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-card">
+        <div class="flow-num">3</div>
+        <div class="flow-ico">🧭</div>
+        <div class="flow-h">Navigate</div>
+        <div class="flow-p">At query time the LLM sees only the skeleton (titles + summaries) and reasons about which nodes to visit.</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-card">
+        <div class="flow-num">4</div>
+        <div class="flow-ico">💡</div>
+        <div class="flow-h">Answer</div>
+        <div class="flow-p">Full text of selected nodes is assembled as context. LLM generates a grounded, cited answer.</div>
+      </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("""
+    <div class="sec-h2" style="font-size:1.1rem;margin-top:1.5rem">PageIndex vs Vector RAG</div>
+    <table class="cmp-tbl">
+      <thead><tr><th>Aspect</th><th>Vector RAG</th><th>PageIndex</th></tr></thead>
+      <tbody>
+        <tr><td>Retrieval</td>         <td class="lose">Cosine similarity</td><td class="win">LLM reasoning</td></tr>
+        <tr><td>Context quality</td>   <td class="lose">Fixed-size chunks</td><td class="win">Whole semantic sections</td></tr>
+        <tr><td>Embedding model</td>   <td class="lose">Required</td>         <td class="win">Not needed</td></tr>
+        <tr><td>Vector database</td>   <td class="lose">Required</td>         <td class="win">Not needed</td></tr>
+        <tr><td>Infrastructure</td>    <td class="lose">Complex stack</td>    <td class="win">Just an LLM</td></tr>
+        <tr><td>FinanceBench</td>      <td class="lose">85 – 90 %</td>        <td class="win">98.7 % ⭐</td></tr>
+      </tbody>
     </table>
     """, unsafe_allow_html=True)
 
-    # ── Provider grid ──
     st.markdown("""
-    <h3 style="font-size:1rem;font-weight:700;color:#c0c0ff;margin:2rem 0 0.5rem 0;">
-        Works with any LLM Provider
-    </h3>
-    <div class="provider-grid">
-        <div class="provider-card"><div class="provider-card-icon">🖥️</div><div class="provider-card-name">LM Studio</div><div class="provider-card-type">Local</div></div>
-        <div class="provider-card"><div class="provider-card-icon">🦙</div><div class="provider-card-name">Ollama</div><div class="provider-card-type">Local</div></div>
-        <div class="provider-card"><div class="provider-card-icon">⚡</div><div class="provider-card-name">vLLM</div><div class="provider-card-type">Local</div></div>
-        <div class="provider-card"><div class="provider-card-icon">🌐</div><div class="provider-card-name">OpenAI</div><div class="provider-card-type">Cloud</div></div>
-        <div class="provider-card"><div class="provider-card-icon">🔮</div><div class="provider-card-name">Anthropic</div><div class="provider-card-type">Cloud</div></div>
-        <div class="provider-card"><div class="provider-card-icon">☁️</div><div class="provider-card-name">Azure OpenAI</div><div class="provider-card-type">Cloud</div></div>
-        <div class="provider-card"><div class="provider-card-icon">💎</div><div class="provider-card-name">Gemini</div><div class="provider-card-type">Cloud</div></div>
-        <div class="provider-card"><div class="provider-card-icon">🔧</div><div class="provider-card-name">Any OpenAI-compat.</div><div class="provider-card-type">Any</div></div>
+    <div class="sec-h2" style="font-size:1.1rem;margin-top:1.5rem">Works with any LLM Provider</div>
+    <div class="prov-grid">
+      <div class="prov-card"><div class="prov-ico">🖥️</div><div class="prov-name">LM Studio</div><div class="prov-type">Local</div></div>
+      <div class="prov-card"><div class="prov-ico">🦙</div><div class="prov-name">Ollama</div><div class="prov-type">Local</div></div>
+      <div class="prov-card"><div class="prov-ico">⚡</div><div class="prov-name">vLLM</div><div class="prov-type">Local</div></div>
+      <div class="prov-card"><div class="prov-ico">🌐</div><div class="prov-name">OpenAI</div><div class="prov-type">Cloud</div></div>
+      <div class="prov-card"><div class="prov-ico">🔮</div><div class="prov-name">Anthropic</div><div class="prov-type">Cloud</div></div>
+      <div class="prov-card"><div class="prov-ico">☁️</div><div class="prov-name">Azure OpenAI</div><div class="prov-type">Cloud</div></div>
+      <div class="prov-card"><div class="prov-ico">💎</div><div class="prov-name">Gemini</div><div class="prov-type">Cloud</div></div>
+      <div class="prov-card"><div class="prov-ico">🔧</div><div class="prov-name">Any OAI-compat</div><div class="prov-type">Any</div></div>
     </div>
     """, unsafe_allow_html=True)
 
-    # ── Quick start ──
-    st.markdown("""
-    <h3 style="font-size:1rem;font-weight:700;color:#c0c0ff;margin:2rem 0 0.8rem 0;">
-        Quick Start
-    </h3>
-    """, unsafe_allow_html=True)
+    st.markdown("<div style='margin-top:1.5rem'></div>", unsafe_allow_html=True)
+    st.markdown("""<div class="sec-h2" style="font-size:1.1rem">Quick Start</div>""", unsafe_allow_html=True)
     st.code("""# 1. Clone & install
 git clone https://github.com/YOUR_USERNAME/pageindex-vectorless-rag
-cd pageindex-vectorless-rag
-pip install -r requirements.txt && pip install -e .
+cd pageindex-vectorless-rag && pip install -r requirements.txt && pip install -e .
 
-# 2. Configure (copy .env.example → .env and edit)
+# 2. Configure — copy .env.example → .env and set your LLM endpoint
 cp .env.example .env
 
-# 3. Run the UI
+# 3. Launch the UI
 streamlit run app.py
 
-# 4. Or use the CLI
+# 4. Or use the CLI directly
 pageindex-demo index  data/your_report.pdf
-pageindex-demo ask    data/your_report.pdf "What are the main findings?"
+pageindex-demo ask    data/your_report.pdf "What are the key findings?"
 pageindex-demo chat   data/your_report.pdf""", language="bash")
