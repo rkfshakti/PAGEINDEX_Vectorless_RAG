@@ -74,3 +74,4 @@ results/*
 !results/.gitkeep
 demo/*.gif
 demo/preview_*.png
+*.pdf
